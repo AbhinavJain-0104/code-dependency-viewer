@@ -194,12 +194,12 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
   }, []);
 
   const graphData = React.useMemo(() => {
-    const nodes = [{ id: currentClassData.name, label: currentClassData.name, group: 'main' }];
+    const nodes = [{ id: currentClassData.name, label: currentClassData.name, color: '#ff9ff3' }];
     const edges = [];
 
     if (currentClassData.dependencies) {
       currentClassData.dependencies.forEach(dep => {
-        nodes.push({ id: dep, label: dep, group: 'dependency' });
+        nodes.push({ id: dep, label: dep, color: '#54a0ff' });
         edges.push({ from: currentClassData.name, to: dep });
       });
     }
@@ -248,14 +248,14 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
     const { nodes } = event;
     if (nodes.length > 0) {
       const clickedNode = graphData.nodes.find(node => node.id === nodes[0]);
-      if (clickedNode && clickedNode.group === 'dependency') {
+      if (clickedNode && clickedNode.id !== currentClassData.name) {
         const newClassData = await fetchClassData(clickedNode.id);
         if (newClassData) {
           setClassStack(prevStack => [...prevStack, newClassData]);
         }
       }
     }
-  }, [fetchClassData, graphData.nodes]);
+  }, [fetchClassData, graphData.nodes, currentClassData.name]);
 
   const handleBack = () => {
     if (classStack.length > 1) {
@@ -318,7 +318,7 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
           </div>
           <div className="ai-description">
             <h3>AI Description</h3>
-            <p>{currentClassData.aiDescription || 'No AI description available.'}</p>
+            <p><strong>{currentClassData.aiDescription || 'No AI description available.'}</strong></p>
           </div>
         </div>
       </main>

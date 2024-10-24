@@ -307,6 +307,10 @@ main {
   padding-left: 20px;
 }
 
+.ai-description p {
+  font-weight: bold;
+}
+
 @media (max-width: 768px) {
   main {
     flex-direction: column;
