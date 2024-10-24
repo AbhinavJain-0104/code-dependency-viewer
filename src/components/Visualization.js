@@ -560,7 +560,7 @@ const Visualization = ({ projectData, onClassSelect }) => {
 
   useEffect(() => {
     const updateDimensions = () => {
-      const container = document.querySelector('.visualization-container');
+      const container = document.querySelector('.visualization');
       if (container) {
         setDimensions({
           width: container.clientWidth,
@@ -576,16 +576,52 @@ const Visualization = ({ projectData, onClassSelect }) => {
   }, []);
 
   const graphData = useMemo(() => {
+    console.log('projectData:', projectData);
     if (!projectData || !projectData.modules || projectData.modules.length === 0) {
+      console.log('No graph data generated');
       return { nodes: [], links: [] };
     }
 
-    // ... (keep existing graphData logic)
+    const nodes = [];
+    const links = [];
+
+    projectData.modules.forEach(module => {
+      nodes.push({ id: module.name, group: 'module' });
+      
+      module.packages.forEach(pkg => {
+        nodes.push({ id: `${module.name}.${pkg.name}`, group: 'package' });
+        links.push({ source: module.name, target: `${module.name}.${pkg.name}` });
+        
+        pkg.classes.forEach(cls => {
+          nodes.push({ id: `${module.name}.${pkg.name}.${cls.name}`, group: 'class', classData: cls });
+          links.push({ source: `${module.name}.${pkg.name}`, target: `${module.name}.${pkg.name}.${cls.name}` });
+        });
+      });
+    });
+
+    const result = { nodes, links };
+    console.log('Generated graph data:', result);
+    return result;
   }, [projectData]);
 
   const handleNodeHover = useCallback((node) => {
-    // ... (keep existing handleNodeHover logic)
-  }, [graphData, highlightLinks, highlightNodes]);
+    if (!node) {
+      setHighlightNodes(new Set());
+      setHighlightLinks(new Set());
+      setHoverNode(null);
+    } else {
+      const neighbors = new Set();
+      graphData.links.forEach(link => {
+        if (link.source === node || link.target === node) {
+          neighbors.add(link.source);
+          neighbors.add(link.target);
+        }
+      });
+      setHighlightLinks(neighbors);
+      setHighlightNodes(new Set(neighbors));
+      setHoverNode(node);
+    }
+  }, [graphData]);
 
   const handleNodeClick = useCallback(node => {
     if (node.group === 'class') {
@@ -616,43 +652,47 @@ const Visualization = ({ projectData, onClassSelect }) => {
 
   return (
     <div className="visualization">
-      <ForceGraph2D
-        ref={forceGraphRef}
-        graphData={graphData}
-        nodeLabel={node => node.id}
-        nodeColor={getNodeColor}
-        nodeRelSize={getNodeSize}
-        linkWidth={link => highlightLinks.has(link) ? 2 : 1}
-        linkColor={getLinkColor}
-        linkDirectionalArrowLength={3}
-        linkDirectionalArrowRelPos={1}
-        linkCurvature={0.25}
-        onNodeHover={handleNodeHover}
-        onNodeClick={handleNodeClick}
-        width={dimensions.width}
-        height={dimensions.height}
-        d3AlphaDecay={0.02}
-        d3VelocityDecay={0.1}
-        cooldownTicks={100}
-        onEngineStop={() => forceGraphRef.current.zoomToFit(400, 60)}
-        nodeCanvasObject={(node, ctx, globalScale) => {
-          const label = node.id.split('.').pop();
-          const fontSize = 12 / globalScale;
-          ctx.font = `${fontSize}px Arial`;
-          const textWidth = ctx.measureText(label).width;
-          const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
+      {graphData.nodes.length === 0 ? (
+        <div className="no-data-message">No data available to visualize</div>
+      ) : (
+        <ForceGraph2D
+          ref={forceGraphRef}
+          graphData={graphData}
+          nodeLabel={node => node.id}
+          nodeColor={getNodeColor}
+          nodeRelSize={getNodeSize}
+          linkWidth={link => highlightLinks.has(link) ? 2 : 1}
+          linkColor={getLinkColor}
+          linkDirectionalArrowLength={3}
+          linkDirectionalArrowRelPos={1}
+          linkCurvature={0.25}
+          onNodeHover={handleNodeHover}
+          onNodeClick={handleNodeClick}
+          width={dimensions.width}
+          height={dimensions.height}
+          d3AlphaDecay={0.02}
+          d3VelocityDecay={0.1}
+          cooldownTicks={100}
+          onEngineStop={() => forceGraphRef.current.zoomToFit(400, 60)}
+          nodeCanvasObject={(node, ctx, globalScale) => {
+            const label = node.id.split('.').pop();
+            const fontSize = 12 / globalScale;
+            ctx.font = `${fontSize}px Arial`;
+            const textWidth = ctx.measureText(label).width;
+            const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
 
-          ctx.fillStyle = getNodeColor(node);
-          ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+            ctx.fillStyle = getNodeColor(node);
+            ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
 
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText(label, node.x, node.y);
-        }}
-        enableZoomPanInteraction={true}
-        enableNodeDrag={false}
-      />
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(label, node.x, node.y);
+          }}
+          enableZoomPanInteraction={true}
+          enableNodeDrag={false}
+        />
+      )}
       <div className="legend">
         <div><span style={{backgroundColor: '#ff9ff3', color: '#ffffff'}}>Module</span></div>
         <div><span style={{backgroundColor: '#54a0ff', color: '#ffffff'}}>Package</span></div>
