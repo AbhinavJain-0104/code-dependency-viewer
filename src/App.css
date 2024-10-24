@@ -66,12 +66,21 @@
   overflow-y: auto;
 }
 
-.visualization-container {
+/* .visualization-container {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 500px;
+} */
+
+.visualization-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: calc(100vh - 60px); /* Adjust based on your header height */
 }
 
 .visualization {
