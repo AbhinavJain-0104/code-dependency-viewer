@@ -246,61 +246,104 @@ function App() {
   //   return null;
   // }, [projectData]);
 
-  return (
-    <div className="App">
-      {!selectedClass && (
-        <header className="App-header">
-          <h1>Code Dependency Visualizer</h1>
-        </header>
-      )}
-      <main className="App-main">
-        {!selectedClass && (
-          <div className="search-container">
-            <GitHubInput onSubmit={handleSubmit} />
-          </div>
-        )}
-        {isLoading && <LoadingAnimation />}
-        {error && <ErrorMessage message={error} />}
-        {projectData && (
-          <>
-            {/* {!selectedClass && (
-              <button className="toggle-details" onClick={toggleDetails}>
-                {showDetails ? 'Hide Details' : 'Show Details'}
-              </button> */}
-              {!selectedClass && (
-  <div className="visualization-wrapper" style={{ height: 'calc(100vh - 180px)' }}>
-    <div className="visualization-container">
-      <Visualization 
-        projectData={projectData} 
-        onClassSelect={handleClassSelect}
-      />
-    </div>
-  </div>
-)}
+//   return (
+//     <div className="App">
+//       {!selectedClass && (
+//         <header className="App-header">
+//           <h1>Code Dependency Visualizer</h1>
+//         </header>
+//       )}
+//       <main className="App-main">
+//         {!selectedClass && (
+//           <div className="search-container">
+//             <GitHubInput onSubmit={handleSubmit} />
+//           </div>
+//         )}
+//         {isLoading && <LoadingAnimation />}
+//         {error && <ErrorMessage message={error} />}
+//         {projectData && (
+//           <>
+//             {/* {!selectedClass && (
+//               <button className="toggle-details" onClick={toggleDetails}>
+//                 {showDetails ? 'Hide Details' : 'Show Details'}
+//               </button> */}
+//               {!selectedClass && (
+//   <div className="visualization-wrapper" style={{ height: 'calc(100vh - 180px)' }}>
+//     <div className="visualization-container">
+//       <Visualization 
+//         projectData={projectData} 
+//         onClassSelect={handleClassSelect}
+//       />
+//     </div>
+//   </div>
+// )}
           
-            <div className="content-container">
-              {showDetails && !selectedClass && <ProjectDetails projectData={projectData} />}
-              {!selectedClass && (
-                <div className="visualization-container">
-                  <Visualization 
-                    projectData={projectData} 
-                    onClassSelect={handleClassSelect}
-                  />
-                </div>
-              )}
-              {selectedClass && (
-                <ClassDetailView 
-                  initialClassData={selectedClass}
-                  onBack={handleBackToVisualization}
-                  fetchClassData={fetchClassData}
+//             <div className="content-container">
+//               {showDetails && !selectedClass && <ProjectDetails projectData={projectData} />}
+//               {!selectedClass && (
+//                 <div className="visualization-container">
+//                   <Visualization 
+//                     projectData={projectData} 
+//                     onClassSelect={handleClassSelect}
+//                   />
+//                 </div>
+//               )}
+//               {selectedClass && (
+//                 <ClassDetailView 
+//                   initialClassData={selectedClass}
+//                   onBack={handleBackToVisualization}
+//                   fetchClassData={fetchClassData}
+//                 />
+//               )}
+//             </div>
+//           </>
+//         )}
+//       </main>
+//     </div>
+//   );
+// }
+return (
+  <div className="App">
+    {!selectedClass && (
+      <header className="App-header">
+        <h1>Code Dependency Visualizer</h1>
+      </header>
+    )}
+    <main className="App-main">
+      {!selectedClass && (
+        <div className="search-container">
+          <GitHubInput onSubmit={handleSubmit} />
+        </div>
+      )}
+      {isLoading && <LoadingAnimation />}
+      {error && <ErrorMessage message={error} />}
+      {projectData && (
+        <>
+          {!selectedClass && (
+            <div className="visualization-wrapper" style={{ height: 'calc(100vh - 180px)' }}>
+              <div className="visualization-container">
+                <Visualization 
+                  projectData={projectData} 
+                  onClassSelect={handleClassSelect}
                 />
-              )}
+              </div>
             </div>
-          </>
-        )}
-      </main>
-    </div>
-  );
+          )}
+          <div className="content-container">
+            {showDetails && !selectedClass && <ProjectDetails projectData={projectData} />}
+            {selectedClass && (
+              <ClassDetailView 
+                initialClassData={selectedClass}
+                onBack={handleBackToVisualization}
+                fetchClassData={fetchClassData}
+              />
+            )}
+          </div>
+        </>
+      )}
+    </main>
+  </div>
+);
 }
 
 export default App;
