@@ -974,6 +974,10 @@ const Visualization = ({ projectData, onClassSelect }) => {
   }, []);
 
   const graphData = React.useMemo(() => {
+    if (!projectData || !projectData.classes || !Array.isArray(projectData.classes)) {
+      return { nodes: [], edges: [] };
+    }
+
     const nodes = projectData.classes.map(classData => ({
       id: classData.name,
       label: classData.name,
@@ -981,7 +985,7 @@ const Visualization = ({ projectData, onClassSelect }) => {
     }));
 
     const edges = projectData.classes.flatMap(classData =>
-      classData.usedClasses.map(usedClass => ({
+      (classData.usedClasses || []).map(usedClass => ({
         from: classData.name,
         to: usedClass
       }))
@@ -1036,7 +1040,7 @@ const Visualization = ({ projectData, onClassSelect }) => {
 
   const handleNodeClick = (event) => {
     const { nodes } = event;
-    if (nodes.length > 0) {
+    if (nodes.length > 0 && projectData && projectData.classes) {
       const selectedClass = projectData.classes.find(classData => classData.name === nodes[0]);
       if (selectedClass) {
         onClassSelect(selectedClass);
@@ -1047,12 +1051,16 @@ const Visualization = ({ projectData, onClassSelect }) => {
   return (
     <div className="visualization-container" ref={containerRef}>
       <h1 className="visualization-title">Code Dependency Visualizer</h1>
-      <Graph
-        graph={graphData}
-        options={options}
-        events={{ select: handleNodeClick }}
-        style={{ height: dimensions.height, width: dimensions.width }}
-      />
+      {graphData.nodes.length > 0 ? (
+        <Graph
+          graph={graphData}
+          options={options}
+          events={{ select: handleNodeClick }}
+          style={{ height: dimensions.height, width: dimensions.width }}
+        />
+      ) : (
+        <div className="no-data-message">No class data available to visualize.</div>
+      )}
     </div>
   );
 };
