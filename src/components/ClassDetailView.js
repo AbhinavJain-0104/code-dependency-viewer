@@ -529,28 +529,17 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
   const currentClassData = classStack[classStack.length - 1];
   const [isFullScreen, setIsFullScreen] = useState(false);
 
-  // const graphData = useMemo(() => {
-  //   const nodes = [{ id: currentClassData.name, group: 'main' }];
-  //   const links = [];
-
-  //   currentClassData.dependencies.forEach(dep => {
-  //     nodes.push({ id: dep, group: 'dependency' });
-  //     links.push({ source: currentClassData.name, target: dep });
-  //   });
-
-  //   return { nodes, links };
-  // }, [currentClassData]);
-  const graphData = React.useMemo(() => {
+  const graphData = useMemo(() => {
     const nodes = [{ id: currentClassData.name, label: currentClassData.name, color: '#ff9ff3' }];
     const edges = [];
-  
+
     if (currentClassData.dependencies) {
       currentClassData.dependencies.forEach(dep => {
         nodes.push({ id: dep, label: dep, color: '#54a0ff' });
         edges.push({ from: currentClassData.name, to: dep });
       });
     }
-  
+
     if (currentClassData.usedClasses) {
       currentClassData.usedClasses.forEach(usedClass => {
         if (!nodes.some(node => node.id === usedClass)) {
@@ -559,18 +548,65 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
         edges.push({ from: usedClass, to: currentClassData.name });
       });
     }
-  
+
     return { nodes, edges };
   }, [currentClassData]);
 
-  const handleNodeClick = useCallback(async (node) => {
-    if (node.group === 'dependency') {
-      const newClassData = await fetchClassData(node.id);
-      if (newClassData) {
-        setClassStack(prevStack => [...prevStack, newClassData]);
+  const options = {
+    layout: {
+      improvedLayout: true,
+      hierarchical: false
+    },
+    edges: {
+      color: "#FFFFFF",
+      width: 0.5,
+      smooth: {
+        type: 'cubicBezier',
+        forceDirection: 'horizontal',
+        roundness: 0.4
+      }
+    },
+    nodes: {
+      shape: 'dot',
+      size: 16,
+      font: {
+        size: 12,
+        color: '#FFFFFF'
+      },
+      borderWidth: 2,
+      shadow: true
+    },
+    physics: {
+      forceAtlas2Based: {
+        gravitationalConstant: -50,
+        centralGravity: 0.01,
+        springLength: 100,
+        springConstant: 0.08
+      },
+      maxVelocity: 50,
+      solver: 'forceAtlas2Based',
+      timestep: 0.35,
+      stabilization: { iterations: 150 }
+    },
+    interaction: {
+      hover: true,
+      tooltipDelay: 300,
+      hideEdgesOnDrag: true
+    }
+  };
+
+  const handleNodeClick = useCallback(async (event) => {
+    const { nodes } = event;
+    if (nodes.length > 0) {
+      const selectedNode = graphData.nodes.find(node => node.id === nodes[0]);
+      if (selectedNode && selectedNode.group === 'dependency') {
+        const newClassData = await fetchClassData(selectedNode.id);
+        if (newClassData) {
+          setClassStack(prevStack => [...prevStack, newClassData]);
+        }
       }
     }
-  }, [fetchClassData]);
+  }, [fetchClassData, graphData.nodes]);
 
   const handleBack = () => {
     if (classStack.length > 1) {
@@ -600,7 +636,7 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
           <div className="graph-container">
             <Graph
               graph={graphData}
-              options={{ layout: { hierarchical: false } }}
+              options={options}
               events={{ select: handleNodeClick }}
               style={{ height: '60vh', width: '100%' }}
             />
