@@ -76,14 +76,3 @@
   font-size: 18px;
   color: #ffffff;
 }
-
-@media (max-width: 768px) {
-  .visualization {
-    height: calc(100vh - 120px);
-  }
-
-  .graph-info,
-  .legend {
-    font-size: 10px;
-  }
-}

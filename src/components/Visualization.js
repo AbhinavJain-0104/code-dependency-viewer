@@ -547,16 +547,13 @@
 
 
 import React, { useCallback, useRef, useEffect, useState, useMemo } from 'react';
-import ForceGraph2D from 'react-force-graph-2d';
+import Graph from 'react-graph-vis';
 import './Visualization.css';
 
 const Visualization = ({ projectData, onClassSelect }) => {
-  const forceGraphRef = useRef();
+  const [graphKey, setGraphKey] = useState(0);
   const containerRef = useRef();
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [highlightNodes, setHighlightNodes] = useState(new Set());
-  const [highlightLinks, setHighlightLinks] = useState(new Set());
-  const [hoverNode, setHoverNode] = useState(null);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -574,87 +571,62 @@ const Visualization = ({ projectData, onClassSelect }) => {
 
   const graphData = useMemo(() => {
     if (!projectData || !projectData.modules || projectData.modules.length === 0) {
-      return { nodes: [], links: [] };
+      return { nodes: [], edges: [] };
     }
 
     const nodes = [];
-    const links = [];
-    const nodeMap = new Map();
+    const edges = [];
 
     projectData.modules.forEach(module => {
-      const moduleNode = { id: module.name, group: 'module' };
-      nodes.push(moduleNode);
-      nodeMap.set(module.name, moduleNode);
+      nodes.push({ id: module.name, label: module.name, group: 'module' });
 
       if (module.packages) {
         module.packages.forEach(pkg => {
           const pkgId = `${module.name}.${pkg.name}`;
-          const pkgNode = { id: pkgId, group: 'package' };
-          nodes.push(pkgNode);
-          nodeMap.set(pkgId, pkgNode);
-          links.push({ source: module.name, target: pkgId });
+          nodes.push({ id: pkgId, label: pkg.name, group: 'package' });
+          edges.push({ from: module.name, to: pkgId });
 
           if (pkg.classes) {
             pkg.classes.forEach(cls => {
               const classId = `${pkgId}.${cls.name}`;
-              const classNode = { id: classId, group: 'class', classData: cls };
-              nodes.push(classNode);
-              nodeMap.set(classId, classNode);
-              links.push({ source: pkgId, target: classId });
+              nodes.push({ id: classId, label: cls.name, group: 'class', classData: cls });
+              edges.push({ from: pkgId, to: classId });
             });
           }
         });
       }
     });
 
-    return { nodes, links, nodeMap };
+    return { nodes, edges };
   }, [projectData]);
 
-  const handleNodeHover = useCallback((node) => {
-    if (!node) {
-      setHighlightNodes(new Set());
-      setHighlightLinks(new Set());
-      setHoverNode(null);
-    } else {
-      const neighbors = new Set();
-      graphData.links.forEach(link => {
-        if (link.source.id === node.id || link.target.id === node.id) {
-          neighbors.add(link.source);
-          neighbors.add(link.target);
+  const options = {
+    layout: {
+      hierarchical: false
+    },
+    edges: {
+      color: "#000000"
+    },
+    height: `${dimensions.height}px`
+  };
+
+  const events = {
+    select: function(event) {
+      const { nodes, edges } = event;
+      if (nodes.length > 0) {
+        const selectedNode = graphData.nodes.find(node => node.id === nodes[0]);
+        if (selectedNode && selectedNode.group === 'class') {
+          onClassSelect(selectedNode.classData);
         }
-      });
-      setHighlightLinks(neighbors);
-      setHighlightNodes(new Set(neighbors));
-      setHoverNode(node);
+      }
     }
-  }, [graphData]);
+  };
 
-  const handleNodeClick = useCallback(node => {
-    if (node.group === 'class') {
-      onClassSelect(node.classData);
-    } else if (node.group === 'module' || node.group === 'package') {
-      node.collapsed = !node.collapsed;
-      forceGraphRef.current.d3ReheatSimulation();
-    }
-  }, [onClassSelect]);
-
-  const getNodeColor = useCallback(node => {
-    if (highlightNodes.has(node)) {
-      return node.group === 'module' ? '#ff6b6b' : 
-             node.group === 'package' ? '#4ecdc4' : '#45b7d1';
-    }
-    return node.group === 'module' ? '#ff9ff3' : 
-           node.group === 'package' ? '#54a0ff' : '#5f27cd';
-  }, [highlightNodes]);
-
-  const getLinkColor = useCallback(link => 
-    highlightLinks.has(link) ? '#ffa500' : '#808080', [highlightLinks]
-  );
-
-  const getNodeSize = useCallback(node => 
-    node.group === 'module' ? 8 : 
-    node.group === 'package' ? 6 : 4, 
-  []);
+  const handleGraphError = (error) => {
+    console.error("Graph rendering error:", error);
+    // Attempt to re-render the graph
+    setGraphKey(prevKey => prevKey + 1);
+  };
 
   return (
     <div className="visualization" ref={containerRef}>
@@ -662,43 +634,20 @@ const Visualization = ({ projectData, onClassSelect }) => {
         <div className="no-data-message">No data available to visualize</div>
       ) : (
         <>
-          <div className="graph-info">Nodes: {graphData.nodes.length}, Links: {graphData.links.length}</div>
-          <ForceGraph2D
-            ref={forceGraphRef}
-            graphData={graphData}
-            nodeLabel={node => node.id}
-            nodeColor={getNodeColor}
-            nodeRelSize={getNodeSize}
-            linkWidth={link => highlightLinks.has(link) ? 2 : 1}
-            linkColor={getLinkColor}
-            linkDirectionalArrowLength={3}
-            linkDirectionalArrowRelPos={1}
-            linkCurvature={0.25}
-            onNodeHover={handleNodeHover}
-            onNodeClick={handleNodeClick}
-            width={dimensions.width}
-            height={dimensions.height}
-            d3AlphaDecay={0.02}
-            d3VelocityDecay={0.1}
-            cooldownTicks={100}
-            onEngineStop={() => forceGraphRef.current.zoomToFit(400, 60)}
-            nodeCanvasObject={(node, ctx, globalScale) => {
-              const label = node.id.split('.').pop();
-              const fontSize = 12 / globalScale;
-              ctx.font = `${fontSize}px Arial`;
-              const textWidth = ctx.measureText(label).width;
-              const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
-
-              ctx.fillStyle = getNodeColor(node);
-              ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
-
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillStyle = '#ffffff';
-              ctx.fillText(label, node.x, node.y);
+          <div className="graph-info">Nodes: {graphData.nodes.length}, Edges: {graphData.edges.length}</div>
+          <Graph
+            key={graphKey}
+            graph={graphData}
+            options={options}
+            events={events}
+            getNetwork={network => {
+              // You can use this to access the vis.js network api
+              network.on("stabilizationIterationsDone", function () {
+                network.setOptions( { physics: false } );
+              });
             }}
-            enableZoomPanInteraction={true}
-            enableNodeDrag={false}
+            style={{ height: `${dimensions.height}px` }}
+            onError={handleGraphError}
           />
         </>
       )}
