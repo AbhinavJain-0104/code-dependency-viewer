@@ -974,22 +974,37 @@ const Visualization = ({ projectData, onClassSelect }) => {
   }, []);
 
   const graphData = React.useMemo(() => {
-    if (!projectData || !projectData.classes || !Array.isArray(projectData.classes)) {
+    if (!projectData || !projectData.modules || projectData.modules.length === 0) {
       return { nodes: [], edges: [] };
     }
 
-    const nodes = projectData.classes.map(classData => ({
-      id: classData.name,
-      label: classData.name,
-      color: classData.type === 'class' ? '#ff9ff3' : '#54a0ff'
-    }));
+    const nodes = [];
+    const edges = [];
 
-    const edges = projectData.classes.flatMap(classData =>
-      (classData.usedClasses || []).map(usedClass => ({
-        from: classData.name,
-        to: usedClass
-      }))
-    );
+    projectData.modules.forEach(module => {
+      if (module.packages) {
+        module.packages.forEach(pkg => {
+          if (pkg.classes) {
+            pkg.classes.forEach(classData => {
+              nodes.push({
+                id: classData.name,
+                label: classData.name,
+                color: '#ff9ff3'
+              });
+
+              if (classData.usedClasses) {
+                classData.usedClasses.forEach(usedClass => {
+                  edges.push({
+                    from: classData.name,
+                    to: usedClass
+                  });
+                });
+              }
+            });
+          }
+        });
+      }
+    });
 
     return { nodes, edges };
   }, [projectData]);
@@ -1040,8 +1055,13 @@ const Visualization = ({ projectData, onClassSelect }) => {
 
   const handleNodeClick = (event) => {
     const { nodes } = event;
-    if (nodes.length > 0 && projectData && projectData.classes) {
-      const selectedClass = projectData.classes.find(classData => classData.name === nodes[0]);
+    if (nodes.length > 0) {
+      const selectedClassName = nodes[0];
+      const selectedClass = projectData.modules
+        .flatMap(module => module.packages)
+        .flatMap(pkg => pkg.classes)
+        .find(classData => classData.name === selectedClassName);
+      
       if (selectedClass) {
         onClassSelect(selectedClass);
       }
