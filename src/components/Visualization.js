@@ -576,7 +576,6 @@ const Visualization = ({ projectData, onClassSelect }) => {
   }, []);
 
   const graphData = useMemo(() => {
-    console.log('projectData:', JSON.stringify(projectData, null, 2));
     if (!projectData || !projectData.modules || projectData.modules.length === 0) {
       console.log('No graph data generated');
       return { nodes: [], links: [] };
@@ -584,31 +583,35 @@ const Visualization = ({ projectData, onClassSelect }) => {
 
     const nodes = [];
     const links = [];
+    const nodeMap = new Map();
 
     projectData.modules.forEach(module => {
-      console.log('Processing module:', module.name);
-      nodes.push({ id: module.name, group: 'module' });
-      
+      const moduleNode = { id: module.name, group: 'module' };
+      nodes.push(moduleNode);
+      nodeMap.set(module.name, moduleNode);
+
       if (module.packages) {
         module.packages.forEach(pkg => {
-          console.log('Processing package:', pkg.name);
-          nodes.push({ id: `${module.name}.${pkg.name}`, group: 'package' });
-          links.push({ source: module.name, target: `${module.name}.${pkg.name}` });
-          
+          const pkgId = `${module.name}.${pkg.name}`;
+          const pkgNode = { id: pkgId, group: 'package' };
+          nodes.push(pkgNode);
+          nodeMap.set(pkgId, pkgNode);
+          links.push({ source: module.name, target: pkgId });
+
           if (pkg.classes) {
             pkg.classes.forEach(cls => {
-              console.log('Processing class:', cls.name);
-              nodes.push({ id: `${module.name}.${pkg.name}.${cls.name}`, group: 'class', classData: cls });
-              links.push({ source: `${module.name}.${pkg.name}`, target: `${module.name}.${pkg.name}.${cls.name}` });
+              const classId = `${pkgId}.${cls.name}`;
+              const classNode = { id: classId, group: 'class', classData: cls };
+              nodes.push(classNode);
+              nodeMap.set(classId, classNode);
+              links.push({ source: pkgId, target: classId });
             });
           }
         });
       }
     });
 
-    const result = { nodes, links };
-    console.log('Generated graph data:', JSON.stringify(result, null, 2));
-    return result;
+    return { nodes, links, nodeMap };
   }, [projectData]);
 
   const handleNodeHover = useCallback((node) => {
@@ -619,7 +622,7 @@ const Visualization = ({ projectData, onClassSelect }) => {
     } else {
       const neighbors = new Set();
       graphData.links.forEach(link => {
-        if (link.source === node || link.target === node) {
+        if (link.source.id === node.id || link.target.id === node.id) {
           neighbors.add(link.source);
           neighbors.add(link.target);
         }
