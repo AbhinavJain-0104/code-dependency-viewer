@@ -125,7 +125,7 @@
   color: #ffffff;
 } */
 
-.visualization {
+/* .visualization {
   width: 100%;
   height: calc(100vh - 60px);
   position: relative;
@@ -170,4 +170,34 @@
   height: 100%;
   font-size: 18px;
   color: #ffffff;
+} */
+
+.visualization-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background-color: #1e1e2f;
+  color: #ffffff;
+}
+
+.visualization-title {
+  text-align: center;
+  padding: 1rem;
+  margin: 0;
+  background-color: #27293d;
+  color: #61dafb;
+}
+
+.graph-container {
+  flex-grow: 1;
+  width: 100%;
+  height: calc(100vh - 60px); /* Adjust based on your header height */
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .visualization-title {
+    font-size: 1.5rem;
+  }
 }
