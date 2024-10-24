@@ -546,13 +546,13 @@
 // export default Visualization;
 
 
-
 import React, { useCallback, useRef, useEffect, useState, useMemo } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import './Visualization.css';
 
 const Visualization = ({ projectData, onClassSelect }) => {
   const forceGraphRef = useRef();
+  const containerRef = useRef();
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [highlightNodes, setHighlightNodes] = useState(new Set());
   const [highlightLinks, setHighlightLinks] = useState(new Set());
@@ -560,12 +560,9 @@ const Visualization = ({ projectData, onClassSelect }) => {
 
   useEffect(() => {
     const updateDimensions = () => {
-      const container = document.querySelector('.visualization');
-      if (container) {
-        setDimensions({
-          width: container.clientWidth,
-          height: container.clientHeight
-        });
+      if (containerRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        setDimensions({ width, height });
       }
     };
 
@@ -577,7 +574,6 @@ const Visualization = ({ projectData, onClassSelect }) => {
 
   const graphData = useMemo(() => {
     if (!projectData || !projectData.modules || projectData.modules.length === 0) {
-      console.log('No graph data generated');
       return { nodes: [], links: [] };
     }
 
@@ -661,12 +657,12 @@ const Visualization = ({ projectData, onClassSelect }) => {
   []);
 
   return (
-    <div className="visualization">
+    <div className="visualization" ref={containerRef}>
       {graphData.nodes.length === 0 ? (
         <div className="no-data-message">No data available to visualize</div>
       ) : (
         <>
-          <div>Nodes: {graphData.nodes.length}, Links: {graphData.links.length}</div>
+          <div className="graph-info">Nodes: {graphData.nodes.length}, Links: {graphData.links.length}</div>
           <ForceGraph2D
             ref={forceGraphRef}
             graphData={graphData}

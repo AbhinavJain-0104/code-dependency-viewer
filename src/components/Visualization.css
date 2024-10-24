@@ -33,8 +33,19 @@
 .visualization {
   position: relative;
   width: 100%;
-  height: calc(100vh - 60px); /* Adjust this value based on your header height */
+  height: calc(100vh - 60px);
   overflow: hidden;
+}
+
+.graph-info {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 5px;
+  border-radius: 5px;
+  z-index: 1000;
+  font-size: 14px;
 }
 
 .legend {
@@ -57,11 +68,21 @@
   font-size: 12px;
 }
 
+.no-data-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 18px;
+  color: #ffffff;
+}
+
 @media (max-width: 768px) {
   .visualization {
-    height: calc(100vh - 120px); /* Adjust for mobile header */
+    height: calc(100vh - 120px);
   }
 
+  .graph-info,
   .legend {
     font-size: 10px;
   }
