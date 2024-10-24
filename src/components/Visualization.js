@@ -5,19 +5,31 @@ import './Visualization.css';
 const Visualization = ({ projectData, onClassSelect }) => {
   const [graphKey, setGraphKey] = useState(0);
   const containerRef = useRef();
-  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  // const [dimensions, setDimensions] = useState({ width: '100%', height: '100%' });
+  // const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [dimensions, setDimensions] = useState({ width: '100%', height: '100%' });
+  // useEffect(() => {
+  //   const updateDimensions = () => {
+  //     if (containerRef.current) {
+  //       const { width, height } = containerRef.current.getBoundingClientRect();
+  //       setDimensions({ width, height });
+  //     }
+  //   };
+
+  //   window.addEventListener('resize', updateDimensions);
+  //   updateDimensions();
+
+  //   return () => window.removeEventListener('resize', updateDimensions);
+  // }, []);
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
-        const { width, height } = containerRef.current.getBoundingClientRect();
-        setDimensions({ width, height });
+        setDimensions({ width: '100%', height: '100%' });
       }
     };
-
+  
     window.addEventListener('resize', updateDimensions);
     updateDimensions();
-
+  
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
@@ -129,7 +141,8 @@ const Visualization = ({ projectData, onClassSelect }) => {
                 network.setOptions({ physics: false });
               });
             }}
-            style={{ height: `${dimensions.height}px`, width: `${dimensions.width}px` }}
+            style={{ height: '100%', width: '100%' }}
+            // style={{ height: `${dimensions.height}px`, width: `${dimensions.width}px` }}
             onError={handleGraphError}
           />
         </>
