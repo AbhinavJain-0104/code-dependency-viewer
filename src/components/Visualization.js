@@ -393,12 +393,80 @@ const Visualization = ({ projectData, onClassSelect }) => {
   }, []);
 
   const graphData = useMemo(() => {
-    // Keep existing graphData logic
+    if (!projectData || !projectData.modules || projectData.modules.length === 0) {
+      return { nodes: [], links: [] };
+    }
+
+    const nodes = [];
+    const links = [];
+    const nodeMap = new Map();
+
+    projectData.modules.forEach(module => {
+      const moduleNode = {
+        id: module.name,
+        group: 'module',
+        moduleData: module,
+      };
+      nodes.push(moduleNode);
+      nodeMap.set(module.name, moduleNode);
+
+      if (module.packages) {
+        module.packages.forEach(pkg => {
+          const packageNode = {
+            id: `${module.name}.${pkg.name}`,
+            group: 'package',
+            packageData: pkg,
+          };
+          nodes.push(packageNode);
+          nodeMap.set(packageNode.id, packageNode);
+          links.push({ source: module.name, target: packageNode.id });
+
+          if (pkg.classes) {
+            pkg.classes.forEach(cls => {
+              const classNode = {
+                id: `${packageNode.id}.${cls.name}`,
+                group: 'class',
+                classData: cls,
+              };
+              nodes.push(classNode);
+              nodeMap.set(classNode.id, classNode);
+              links.push({ source: packageNode.id, target: classNode.id });
+
+              if (cls.usedClasses) {
+                cls.usedClasses.forEach(usedClass => {
+                  const targetNode = nodes.find(n => n.id.endsWith(`.${usedClass}`));
+                  if (targetNode) {
+                    links.push({ source: classNode.id, target: targetNode.id });
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+
+    return { nodes, links };
   }, [projectData]);
 
   const handleNodeHover = useCallback((node) => {
-    // Keep existing handleNodeHover logic
-  }, [graphData]);
+    highlightNodes.clear();
+    highlightLinks.clear();
+    if (node) {
+      highlightNodes.add(node);
+      graphData.links.forEach(link => {
+        if (link.source === node || link.target === node) {
+          highlightLinks.add(link);
+          highlightNodes.add(link.source);
+          highlightNodes.add(link.target);
+        }
+      });
+    }
+
+    setHoverNode(node || null);
+    setHighlightNodes(new Set(highlightNodes));
+    setHighlightLinks(new Set(highlightLinks));
+  }, [graphData, highlightLinks, highlightNodes]);
 
   const handleNodeClick = useCallback(node => {
     if (node.group === 'class') {
@@ -407,7 +475,12 @@ const Visualization = ({ projectData, onClassSelect }) => {
   }, [onClassSelect]);
 
   const getNodeColor = useCallback(node => {
-    // Keep existing getNodeColor logic
+    if (highlightNodes.has(node)) {
+      return node.group === 'module' ? '#ff6b6b' : 
+             node.group === 'package' ? '#4ecdc4' : '#45b7d1';
+    }
+    return node.group === 'module' ? '#ff9ff3' : 
+           node.group === 'package' ? '#54a0ff' : '#5f27cd';
   }, [highlightNodes]);
 
   const getLinkColor = useCallback(link => 
