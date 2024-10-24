@@ -529,16 +529,38 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
   const currentClassData = classStack[classStack.length - 1];
   const [isFullScreen, setIsFullScreen] = useState(false);
 
-  const graphData = useMemo(() => {
-    const nodes = [{ id: currentClassData.name, group: 'main' }];
-    const links = [];
+  // const graphData = useMemo(() => {
+  //   const nodes = [{ id: currentClassData.name, group: 'main' }];
+  //   const links = [];
 
-    currentClassData.dependencies.forEach(dep => {
-      nodes.push({ id: dep, group: 'dependency' });
-      links.push({ source: currentClassData.name, target: dep });
-    });
+  //   currentClassData.dependencies.forEach(dep => {
+  //     nodes.push({ id: dep, group: 'dependency' });
+  //     links.push({ source: currentClassData.name, target: dep });
+  //   });
 
-    return { nodes, links };
+  //   return { nodes, links };
+  // }, [currentClassData]);
+  const graphData = React.useMemo(() => {
+    const nodes = [{ id: currentClassData.name, label: currentClassData.name, color: '#ff9ff3' }];
+    const edges = [];
+  
+    if (currentClassData.dependencies) {
+      currentClassData.dependencies.forEach(dep => {
+        nodes.push({ id: dep, label: dep, color: '#54a0ff' });
+        edges.push({ from: currentClassData.name, to: dep });
+      });
+    }
+  
+    if (currentClassData.usedClasses) {
+      currentClassData.usedClasses.forEach(usedClass => {
+        if (!nodes.some(node => node.id === usedClass)) {
+          nodes.push({ id: usedClass, label: usedClass, color: '#5f27cd' });
+        }
+        edges.push({ from: usedClass, to: currentClassData.name });
+      });
+    }
+  
+    return { nodes, edges };
   }, [currentClassData]);
 
   const handleNodeClick = useCallback(async (node) => {
