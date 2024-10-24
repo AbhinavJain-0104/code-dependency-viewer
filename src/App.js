@@ -226,10 +226,19 @@ function App() {
     setShowDetails(prev => !prev);
   }, []);
 
+  
   const fetchClassData = useCallback((className) => {
-    // Implement this function to find and return class data
-    // You may need to traverse the projectData structure
-    // Return null if class is not found
+    if (!projectData) return null;
+  
+    for (const module of projectData.modules) {
+      for (const pkg of module.packages) {
+        const cls = pkg.classes.find(c => c.name === className);
+        if (cls) {
+          return cls;
+        }
+      }
+    }
+    return null;
   }, [projectData]);
 
   return (
