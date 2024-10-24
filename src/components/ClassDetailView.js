@@ -168,37 +168,94 @@
 // export default ClassDetailView;
 
 
-import React, { useState, useCallback } from 'react';
-import { ForceGraph2D } from 'react-force-graph';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import Graph from 'react-graph-vis';
 import { FaArrowLeft } from 'react-icons/fa';
 import './ClassDetailView.css';
 
 const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
   const [classStack, setClassStack] = useState([initialClassData]);
   const currentClassData = classStack[classStack.length - 1];
+  const containerRef = useRef();
+  const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        setDimensions({ width, height: height * 0.6 });
+      }
+    };
+
+    window.addEventListener('resize', updateDimensions);
+    updateDimensions();
+
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
 
   const graphData = React.useMemo(() => {
-    const nodes = [{ id: currentClassData.name, group: 'main' }];
-    const links = [];
+    const nodes = [{ id: currentClassData.name, label: currentClassData.name, group: 'main' }];
+    const edges = [];
 
     if (currentClassData.dependencies) {
       currentClassData.dependencies.forEach(dep => {
-        nodes.push({ id: dep, group: 'dependency' });
-        links.push({ source: currentClassData.name, target: dep });
+        nodes.push({ id: dep, label: dep, group: 'dependency' });
+        edges.push({ from: currentClassData.name, to: dep });
       });
     }
 
-    return { nodes, links };
+    return { nodes, edges };
   }, [currentClassData]);
 
-  const handleNodeClick = useCallback(async (node) => {
-    if (node.group === 'dependency') {
-      const newClassData = await fetchClassData(node.id);
-      if (newClassData) {
-        setClassStack(prevStack => [...prevStack, newClassData]);
+  const options = {
+    layout: {
+      improvedLayout: true,
+      hierarchical: false
+    },
+    edges: {
+      color: "#FFFFFF",
+      smooth: {
+        type: 'cubicBezier',
+        forceDirection: 'horizontal',
+        roundness: 0.4
+      }
+    },
+    nodes: {
+      shape: 'dot',
+      size: 16,
+      font: {
+        size: 12,
+        color: '#FFFFFF'
+      },
+      borderWidth: 2,
+      shadow: true
+    },
+    physics: {
+      forceAtlas2Based: {
+        gravitationalConstant: -50,
+        centralGravity: 0.01,
+        springLength: 100,
+        springConstant: 0.08
+      },
+      maxVelocity: 50,
+      solver: 'forceAtlas2Based',
+      timestep: 0.35,
+      stabilization: { iterations: 150 }
+    }
+  };
+
+  const handleNodeClick = useCallback(async (event) => {
+    const { nodes } = event;
+    if (nodes.length > 0) {
+      const clickedNode = graphData.nodes.find(node => node.id === nodes[0]);
+      if (clickedNode && clickedNode.group === 'dependency') {
+        const newClassData = await fetchClassData(clickedNode.id);
+        if (newClassData) {
+          setClassStack(prevStack => [...prevStack, newClassData]);
+        }
       }
     }
-  }, [fetchClassData]);
+  }, [fetchClassData, graphData.nodes]);
 
   const handleBack = () => {
     if (classStack.length > 1) {
@@ -218,15 +275,12 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
       </header>
       <main>
         <div className="left-panel">
-          <div className="graph-container">
-            <h3>Class Dependencies</h3>
-            <ForceGraph2D
-              graphData={graphData}
-              nodeAutoColorBy="group"
-              nodeLabel={node => node.id}
-              onNodeClick={handleNodeClick}
-              width={400}
-              height={300}
+          <div className="graph-container" ref={containerRef}>
+            <Graph
+              graph={graphData}
+              options={options}
+              events={{ select: handleNodeClick }}
+              style={{ height: `${dimensions.height}px`, width: '100%' }}
             />
           </div>
           <div className="metrics">
@@ -249,6 +303,18 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
             <h3>General Information</h3>
             <p><strong>Package:</strong> {currentClassData.packageName}</p>
             <p><strong>File Path:</strong> {currentClassData.filePath}</p>
+            <h4>Fields:</h4>
+            <ul>
+              {currentClassData.fields?.map(field => (
+                <li key={field}>{field}</li>
+              ))}
+            </ul>
+            <h4>Methods:</h4>
+            <ul>
+              {currentClassData.methods?.map(method => (
+                <li key={method}>{method}</li>
+              ))}
+            </ul>
           </div>
           <div className="ai-description">
             <h3>AI Description</h3>

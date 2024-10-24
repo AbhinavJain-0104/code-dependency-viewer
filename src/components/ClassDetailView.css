@@ -274,9 +274,8 @@ main {
   margin-bottom: 1rem;
 }
 
-.graph-container h3, .general-info h3, .ai-description h3 {
-  margin-top: 0;
-  color: #61dafb;
+.graph-container {
+  height: 60vh;
 }
 
 .metrics {
@@ -299,6 +298,15 @@ main {
   font-size: 0.8rem;
 }
 
+.general-info h3, .ai-description h3 {
+  color: #61dafb;
+  margin-top: 0;
+}
+
+.general-info ul {
+  padding-left: 20px;
+}
+
 @media (max-width: 768px) {
   main {
     flex-direction: column;
@@ -307,6 +315,10 @@ main {
   .left-panel {
     margin-right: 0;
     margin-bottom: 1rem;
+  }
+
+  .graph-container {
+    height: 40vh;
   }
 
   .metrics {
