@@ -1,48 +1,41 @@
-import React, { useState } from 'react';
-import ClassGraph from './ClassGraph';
-import ClassMetrics from './ClassMetrics';
-import ClassInfo from './ClassInfo';
-import './ClassDetailPage.css';
+import React, { useCallback } from 'react';
+import ForceGraph2D from 'react-force-graph-2d';
+import './ClassGraph.css';
 
-const ClassDetailPage = ({ initialClassData, onBack, fetchClassData }) => {
-  const [classStack, setClassStack] = useState([initialClassData]);
-  const currentClassData = classStack[classStack.length - 1];
+const ClassGraph = ({ classData, onClassClick }) => {
+  const graphData = React.useMemo(() => {
+    const nodes = [{ id: classData.name, group: 'main' }];
+    const links = [];
 
-  const handleClassClick = async (className) => {
-    const newClassData = await fetchClassData(className);
-    if (newClassData) {
-      setClassStack(prevStack => [...prevStack, newClassData]);
+    if (classData.usedClasses) {
+      classData.usedClasses.forEach(usedClass => {
+        nodes.push({ id: usedClass, group: 'dependency' });
+        links.push({ source: classData.name, target: usedClass });
+      });
     }
-  };
 
-  const handleBack = () => {
-    if (classStack.length > 1) {
-      setClassStack(prevStack => prevStack.slice(0, -1));
-    } else {
-      onBack();
+    return { nodes, links };
+  }, [classData]);
+
+  const handleNodeClick = useCallback((node) => {
+    if (node.group === 'dependency') {
+      onClassClick(node.id);
     }
-  };
+  }, [onClassClick]);
 
   return (
-    <div className="class-detail-page">
-      <header className="class-detail-header">
-        <button onClick={handleBack} className="back-button">Back</button>
-        <h1>{currentClassData.name}</h1>
-      </header>
-      <div className="class-detail-content">
-        <div className="left-panel">
-          <ClassGraph 
-            classData={currentClassData} 
-            onClassClick={handleClassClick} 
-          />
-          <ClassMetrics metrics={currentClassData.metrics} />
-        </div>
-        <div className="right-panel">
-          <ClassInfo classData={currentClassData} />
-        </div>
-      </div>
+    <div className="class-graph">
+      <h2>Class Dependencies</h2>
+      <ForceGraph2D
+        graphData={graphData}
+        nodeAutoColorBy="group"
+        nodeLabel={node => node.id}
+        onNodeClick={handleNodeClick}
+        width={600}
+        height={400}
+      />
     </div>
   );
 };
 
-export default ClassDetailPage;
+export default ClassGraph;
