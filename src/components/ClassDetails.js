@@ -1,3 +1,7 @@
+
+
+
+
 // import React from 'react';
 // import './ClassDetails.css';
 
@@ -55,46 +59,47 @@
 
 
 
-
-
 import React from 'react';
 import './ClassDetails.css';
 
+const Tile = ({ title, children }) => (
+  <div className="tile">
+    <h2>{title}</h2>
+    {children}
+  </div>
+);
+
 const GeneralInfo = ({ packageName, filePath }) => (
-  <section className="general-info">
-    <h2>General Information</h2>
+  <Tile title="General Information">
     <p><strong>Package:</strong> {packageName}</p>
     <p><strong>File Path:</strong> {filePath}</p>
-  </section>
+  </Tile>
 );
 
 const Fields = ({ fields }) => (
-  <section className="fields-section">
-    <h2>Fields</h2>
+  <Tile title="Fields">
     <ul>
       {fields.map((field, index) => (
         <li key={index}>{field}</li>
       ))}
     </ul>
-  </section>
+  </Tile>
 );
 
 const Methods = ({ methods }) => (
-  <section className="methods-section">
-    <h2>Methods</h2>
+  <Tile title="Methods">
     <ul>
       {methods.map((method, index) => (
         <li key={index}>{method}</li>
       ))}
     </ul>
-  </section>
+  </Tile>
 );
 
 const AIDescription = ({ description }) => (
-  <section className="ai-description">
-    <h2>AI Description</h2>
+  <Tile title="AI Description">
     <p>{description}</p>
-  </section>
+  </Tile>
 );
 
 const ClassDetails = ({ classData }) => {

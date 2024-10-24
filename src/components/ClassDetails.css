@@ -1,4 +1,4 @@
-.class-detail-view {
+/* .class-detail-view {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -47,4 +47,31 @@ main {
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
+} */
+
+
+.class-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tile {
+  background-color: #27293d;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #ffffff;
+}
+
+.tile h2 {
+  margin-bottom: 0.5rem;
+}
+
+.tile ul {
+  list-style-type: none;
+  padding-left: 1rem;
+}
+
+.tile li {
+  margin-bottom: 0.25rem;
 }
