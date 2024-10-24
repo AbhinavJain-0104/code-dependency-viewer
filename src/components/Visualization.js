@@ -5,8 +5,8 @@ import './Visualization.css';
 const Visualization = ({ projectData, onClassSelect }) => {
   const [graphKey, setGraphKey] = useState(0);
   const containerRef = useRef();
-  // const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [dimensions, setDimensions] = useState({ width: '100%', height: '100%' });
+  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  // const [dimensions, setDimensions] = useState({ width: '100%', height: '100%' });
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
