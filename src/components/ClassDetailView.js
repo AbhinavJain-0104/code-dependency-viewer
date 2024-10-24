@@ -168,22 +168,184 @@
 // export default ClassDetailView;
 
 
+// import React, { useState, useCallback, useRef, useEffect } from 'react';
+// import Graph from 'react-graph-vis';
+// import { FaArrowLeft } from 'react-icons/fa';
+// import './ClassDetailView.css';
+
+// const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
+//   const [classStack, setClassStack] = useState([initialClassData]);
+//   const currentClassData = classStack[classStack.length - 1];
+//   const containerRef = useRef();
+//   const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
+
+//   useEffect(() => {
+//     const updateDimensions = () => {
+//       if (containerRef.current) {
+//         const { width, height } = containerRef.current.getBoundingClientRect();
+//         setDimensions({ width, height: height * 0.6 });
+//       }
+//     };
+
+//     window.addEventListener('resize', updateDimensions);
+//     updateDimensions();
+
+//     return () => window.removeEventListener('resize', updateDimensions);
+//   }, []);
+
+//   const graphData = React.useMemo(() => {
+//     const nodes = [{ id: currentClassData.name, label: currentClassData.name, color: '#ff9ff3' }];
+//     const edges = [];
+
+//     if (currentClassData.dependencies) {
+//       currentClassData.dependencies.forEach(dep => {
+//         nodes.push({ id: dep, label: dep, color: '#54a0ff' });
+//         edges.push({ from: currentClassData.name, to: dep });
+//       });
+//     }
+
+//     return { nodes, edges };
+//   }, [currentClassData]);
+
+//   const options = {
+//     layout: {
+//       improvedLayout: true,
+//       hierarchical: false
+//     },
+//     edges: {
+//       color: "#FFFFFF",
+//       smooth: {
+//         type: 'cubicBezier',
+//         forceDirection: 'horizontal',
+//         roundness: 0.4
+//       }
+//     },
+//     nodes: {
+//       shape: 'dot',
+//       size: 16,
+//       font: {
+//         size: 12,
+//         color: '#FFFFFF'
+//       },
+//       borderWidth: 2,
+//       shadow: true
+//     },
+//     physics: {
+//       forceAtlas2Based: {
+//         gravitationalConstant: -50,
+//         centralGravity: 0.01,
+//         springLength: 100,
+//         springConstant: 0.08
+//       },
+//       maxVelocity: 50,
+//       solver: 'forceAtlas2Based',
+//       timestep: 0.35,
+//       stabilization: { iterations: 150 }
+//     }
+//   };
+
+//   const handleNodeClick = useCallback(async (event) => {
+//     const { nodes } = event;
+//     if (nodes.length > 0) {
+//       const clickedNode = graphData.nodes.find(node => node.id === nodes[0]);
+//       if (clickedNode && clickedNode.id !== currentClassData.name) {
+//         const newClassData = await fetchClassData(clickedNode.id);
+//         if (newClassData) {
+//           setClassStack(prevStack => [...prevStack, newClassData]);
+//         }
+//       }
+//     }
+//   }, [fetchClassData, graphData.nodes, currentClassData.name]);
+
+//   const handleBack = () => {
+//     if (classStack.length > 1) {
+//       setClassStack(prevStack => prevStack.slice(0, -1));
+//     } else {
+//       onBack();
+//     }
+//   };
+
+//   return (
+//     <div className="class-detail-view">
+//       <header>
+//         <button onClick={handleBack} className="back-button">
+//           <FaArrowLeft /> Back
+//         </button>
+//         <h2>{currentClassData.name}</h2>
+//       </header>
+//       <main>
+//         <div className="left-panel">
+//           <div className="graph-container" ref={containerRef}>
+//             <Graph
+//               graph={graphData}
+//               options={options}
+//               events={{ select: handleNodeClick }}
+//               style={{ height: `${dimensions.height}px`, width: '100%' }}
+//             />
+//           </div>
+//           <div className="metrics">
+//             <div className="metric">
+//               <span className="metric-value">{currentClassData.metrics?.methodCount || 'N/A'}</span>
+//               <span className="metric-label">Methods</span>
+//             </div>
+//             <div className="metric">
+//               <span className="metric-value">{currentClassData.metrics?.cyclomaticComplexity || 'N/A'}</span>
+//               <span className="metric-label">Complexity</span>
+//             </div>
+//             <div className="metric">
+//               <span className="metric-value">{currentClassData.metrics?.linesOfCode || 'N/A'}</span>
+//               <span className="metric-label">Lines of Code</span>
+//             </div>
+//           </div>
+//         </div>
+//         <div className="right-panel">
+//           <div className="general-info">
+//             <h3>General Information</h3>
+//             <p><strong>Package:</strong> {currentClassData.packageName}</p>
+//             <p><strong>File Path:</strong> {currentClassData.filePath}</p>
+//             <h4>Fields:</h4>
+//             <ul>
+//               {currentClassData.fields?.map(field => (
+//                 <li key={field}>{field}</li>
+//               ))}
+//             </ul>
+//             <h4>Methods:</h4>
+//             <ul>
+//               {currentClassData.methods?.map(method => (
+//                 <li key={method}>{method}</li>
+//               ))}
+//             </ul>
+//           </div>
+//           <div className="ai-description">
+//             <h3>AI Description</h3>
+//             <p><strong>{currentClassData.aiDescription || 'No AI description available.'}</strong></p>
+//           </div>
+//         </div>
+//       </main>
+//     </div>
+//   );
+// };
+
+// export default ClassDetailView;
+
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Graph from 'react-graph-vis';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaExpandAlt } from 'react-icons/fa';
 import './ClassDetailView.css';
 
 const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
   const [classStack, setClassStack] = useState([initialClassData]);
   const currentClassData = classStack[classStack.length - 1];
   const containerRef = useRef();
-  const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
+  const [dimensions, setDimensions] = useState({ width: '100%', height: '60vh' });
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
         const { width, height } = containerRef.current.getBoundingClientRect();
-        setDimensions({ width, height: height * 0.6 });
+        setDimensions({ width: '100%', height: isFullScreen ? '90vh' : '60vh' });
       }
     };
 
@@ -191,58 +353,74 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
     updateDimensions();
 
     return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
+  }, [isFullScreen]);
 
   const graphData = React.useMemo(() => {
-    const nodes = [{ id: currentClassData.name, label: currentClassData.name, color: '#ff9ff3' }];
-    const edges = [];
+  const nodes = [{ id: currentClassData.name, label: currentClassData.name, color: '#ff9ff3' }];
+  const edges = [];
 
-    if (currentClassData.dependencies) {
-      currentClassData.dependencies.forEach(dep => {
-        nodes.push({ id: dep, label: dep, color: '#54a0ff' });
-        edges.push({ from: currentClassData.name, to: dep });
-      });
-    }
+  if (currentClassData.dependencies) {
+    currentClassData.dependencies.forEach(dep => {
+      nodes.push({ id: dep, label: dep, color: '#54a0ff' });
+      edges.push({ from: currentClassData.name, to: dep });
+    });
+  }
 
-    return { nodes, edges };
-  }, [currentClassData]);
-
-  const options = {
-    layout: {
-      improvedLayout: true,
-      hierarchical: false
-    },
-    edges: {
-      color: "#FFFFFF",
-      smooth: {
-        type: 'cubicBezier',
-        forceDirection: 'horizontal',
-        roundness: 0.4
+  if (currentClassData.usedClasses) {
+    currentClassData.usedClasses.forEach(usedClass => {
+      if (!nodes.some(node => node.id === usedClass)) {
+        nodes.push({ id: usedClass, label: usedClass, color: '#5f27cd' });
       }
+      edges.push({ from: usedClass, to: currentClassData.name });
+    });
+  }
+
+  return { nodes, edges };
+}, [currentClassData]);
+
+ const options = {
+  layout: {
+    improvedLayout: true,
+    hierarchical: false
+  },
+  edges: {
+    color: "#FFFFFF",
+    smooth: {
+      type: 'cubicBezier',
+      forceDirection: 'horizontal',
+      roundness: 0.4
     },
-    nodes: {
-      shape: 'dot',
-      size: 16,
-      font: {
-        size: 12,
-        color: '#FFFFFF'
-      },
-      borderWidth: 2,
-      shadow: true
-    },
-    physics: {
-      forceAtlas2Based: {
-        gravitationalConstant: -50,
-        centralGravity: 0.01,
-        springLength: 100,
-        springConstant: 0.08
-      },
-      maxVelocity: 50,
-      solver: 'forceAtlas2Based',
-      timestep: 0.35,
-      stabilization: { iterations: 150 }
+    arrows: {
+      to: { enabled: true, scaleFactor: 0.5 }
     }
-  };
+  },
+  nodes: {
+    shape: 'dot',
+    size: 16,
+    font: {
+      size: 12,
+      color: '#FFFFFF'
+    },
+    borderWidth: 2,
+    shadow: true
+  },
+  physics: {
+    forceAtlas2Based: {
+      gravitationalConstant: -50,
+      centralGravity: 0.01,
+      springLength: 100,
+      springConstant: 0.08
+    },
+    maxVelocity: 50,
+    solver: 'forceAtlas2Based',
+    timestep: 0.35,
+    stabilization: { iterations: 150 }
+  },
+  interaction: {
+    hover: true,
+    tooltipDelay: 300
+  }
+};
 
   const handleNodeClick = useCallback(async (event) => {
     const { nodes } = event;
@@ -265,22 +443,29 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
     }
   };
 
+  const toggleFullScreen = () => {
+    setIsFullScreen(!isFullScreen);
+  };
+
   return (
-    <div className="class-detail-view">
+    <div className={`class-detail-view ${isFullScreen ? 'fullscreen' : ''}`}>
       <header>
         <button onClick={handleBack} className="back-button">
           <FaArrowLeft /> Back
         </button>
         <h2>{currentClassData.name}</h2>
+        <button onClick={toggleFullScreen} className="fullscreen-button">
+          <FaExpandAlt /> {isFullScreen ? 'Exit Fullscreen' : 'Fullscreen'}
+        </button>
       </header>
       <main>
-        <div className="left-panel">
+        <div className={`left-panel ${isFullScreen ? 'fullscreen' : ''}`}>
           <div className="graph-container" ref={containerRef}>
             <Graph
               graph={graphData}
               options={options}
               events={{ select: handleNodeClick }}
-              style={{ height: `${dimensions.height}px`, width: '100%' }}
+              style={{ height: dimensions.height, width: dimensions.width }}
             />
           </div>
           <div className="metrics">
@@ -298,23 +483,27 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
             </div>
           </div>
         </div>
-        <div className="right-panel">
+        <div className={`right-panel ${isFullScreen ? 'hidden' : ''}`}>
           <div className="general-info">
             <h3>General Information</h3>
             <p><strong>Package:</strong> {currentClassData.packageName}</p>
             <p><strong>File Path:</strong> {currentClassData.filePath}</p>
-            <h4>Fields:</h4>
-            <ul>
-              {currentClassData.fields?.map(field => (
-                <li key={field}>{field}</li>
-              ))}
-            </ul>
-            <h4>Methods:</h4>
-            <ul>
-              {currentClassData.methods?.map(method => (
-                <li key={method}>{method}</li>
-              ))}
-            </ul>
+            <div className="fields-section">
+              <h4>Fields:</h4>
+              <ul>
+                {currentClassData.fields?.map(field => (
+                  <li key={field}>{field}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="methods-section">
+              <h4>Methods:</h4>
+              <ul>
+                {currentClassData.methods?.map(method => (
+                  <li key={method}>{method}</li>
+                ))}
+              </ul>
+            </div>
           </div>
           <div className="ai-description">
             <h3>AI Description</h3>
