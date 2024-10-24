@@ -595,18 +595,20 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
     }
   };
 
-  const handleNodeClick = useCallback(async (event) => {
-    const { nodes } = event;
-    if (nodes.length > 0) {
-      const selectedNode = graphData.nodes.find(node => node.id === nodes[0]);
-      if (selectedNode && selectedNode.group === 'dependency') {
-        const newClassData = await fetchClassData(selectedNode.id);
-        if (newClassData) {
-          setClassStack(prevStack => [...prevStack, newClassData]);
+  const events = {
+    select: async (event) => {
+      const { nodes } = event;
+      if (nodes.length > 0) {
+        const selectedNode = graphData.nodes.find(node => node.id === nodes[0]);
+        if (selectedNode) {
+          const newClassData = await fetchClassData(selectedNode.id);
+          if (newClassData) {
+            setClassStack(prevStack => [...prevStack, newClassData]);
+          }
         }
       }
     }
-  }, [fetchClassData, graphData.nodes]);
+  };
 
   const handleBack = () => {
     if (classStack.length > 1) {
@@ -637,7 +639,7 @@ const ClassDetailView = ({ initialClassData, onBack, fetchClassData }) => {
             <Graph
               graph={graphData}
               options={options}
-              events={{ select: handleNodeClick }}
+              events={events}
               style={{ height: '60vh', width: '100%' }}
             />
           </div>
