@@ -249,11 +249,21 @@ function App() {
         {error && <ErrorMessage message={error} />}
         {projectData && (
           <>
-            {!selectedClass && (
+            {/* {!selectedClass && (
               <button className="toggle-details" onClick={toggleDetails}>
                 {showDetails ? 'Hide Details' : 'Show Details'}
-              </button>
-            )}
+              </button> */}
+              {!selectedClass && (
+  <div className="visualization-wrapper" style={{ height: 'calc(100vh - 180px)' }}>
+    <div className="visualization-container">
+      <Visualization 
+        projectData={projectData} 
+        onClassSelect={handleClassSelect}
+      />
+    </div>
+  </div>
+)}
+          
             <div className="content-container">
               {showDetails && !selectedClass && <ProjectDetails projectData={projectData} />}
               {!selectedClass && (

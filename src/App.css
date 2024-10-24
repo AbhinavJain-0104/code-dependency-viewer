@@ -77,10 +77,8 @@
 .visualization-container {
   flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: center;
   width: 100%;
-  height: calc(100vh - 100px); /* Adjust based on your header and padding */
+  height: calc(100vh - 180px); /* Adjust based on your header and other elements */
   overflow: hidden;
 }
 
