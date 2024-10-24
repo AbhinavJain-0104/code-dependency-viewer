@@ -546,6 +546,123 @@
 // export default Visualization;
 
 
+// import React, { useCallback, useRef, useEffect, useState, useMemo } from 'react';
+// import Graph from 'react-graph-vis';
+// import './Visualization.css';
+
+// const Visualization = ({ projectData, onClassSelect }) => {
+//   const [graphKey, setGraphKey] = useState(0);
+//   const containerRef = useRef();
+//   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+
+//   useEffect(() => {
+//     const updateDimensions = () => {
+//       if (containerRef.current) {
+//         const { width, height } = containerRef.current.getBoundingClientRect();
+//         setDimensions({ width, height });
+//       }
+//     };
+
+//     window.addEventListener('resize', updateDimensions);
+//     updateDimensions();
+
+//     return () => window.removeEventListener('resize', updateDimensions);
+//   }, []);
+
+//   const graphData = useMemo(() => {
+//     if (!projectData || !projectData.modules || projectData.modules.length === 0) {
+//       return { nodes: [], edges: [] };
+//     }
+
+//     const nodes = [];
+//     const edges = [];
+
+//     projectData.modules.forEach(module => {
+//       nodes.push({ id: module.name, label: module.name, group: 'module' });
+
+//       if (module.packages) {
+//         module.packages.forEach(pkg => {
+//           const pkgId = `${module.name}.${pkg.name}`;
+//           nodes.push({ id: pkgId, label: pkg.name, group: 'package' });
+//           edges.push({ from: module.name, to: pkgId });
+
+//           if (pkg.classes) {
+//             pkg.classes.forEach(cls => {
+//               const classId = `${pkgId}.${cls.name}`;
+//               nodes.push({ id: classId, label: cls.name, group: 'class', classData: cls });
+//               edges.push({ from: pkgId, to: classId });
+//             });
+//           }
+//         });
+//       }
+//     });
+
+//     return { nodes, edges };
+//   }, [projectData]);
+
+//   const options = {
+//     layout: {
+//       hierarchical: false
+//     },
+//     edges: {
+//       color: "#000000"
+//     },
+//     height: `${dimensions.height}px`
+//   };
+
+//   const events = {
+//     select: function(event) {
+//       const { nodes, edges } = event;
+//       if (nodes.length > 0) {
+//         const selectedNode = graphData.nodes.find(node => node.id === nodes[0]);
+//         if (selectedNode && selectedNode.group === 'class') {
+//           onClassSelect(selectedNode.classData);
+//         }
+//       }
+//     }
+//   };
+
+//   const handleGraphError = (error) => {
+//     console.error("Graph rendering error:", error);
+//     // Attempt to re-render the graph
+//     setGraphKey(prevKey => prevKey + 1);
+//   };
+
+//   return (
+//     <div className="visualization" ref={containerRef}>
+//       {graphData.nodes.length === 0 ? (
+//         <div className="no-data-message">No data available to visualize</div>
+//       ) : (
+//         <>
+//           <div className="graph-info">Nodes: {graphData.nodes.length}, Edges: {graphData.edges.length}</div>
+//           <Graph
+//             key={graphKey}
+//             graph={graphData}
+//             options={options}
+//             events={events}
+//             getNetwork={network => {
+//               // You can use this to access the vis.js network api
+//               network.on("stabilizationIterationsDone", function () {
+//                 network.setOptions( { physics: false } );
+//               });
+//             }}
+//             style={{ height: `${dimensions.height}px` }}
+//             onError={handleGraphError}
+//           />
+//         </>
+//       )}
+//       <div className="legend">
+//         <div><span style={{backgroundColor: '#ff9ff3', color: '#ffffff'}}>Module</span></div>
+//         <div><span style={{backgroundColor: '#54a0ff', color: '#ffffff'}}>Package</span></div>
+//         <div><span style={{backgroundColor: '#5f27cd', color: '#ffffff'}}>Class</span></div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Visualization;
+
+
 import React, { useCallback, useRef, useEffect, useState, useMemo } from 'react';
 import Graph from 'react-graph-vis';
 import './Visualization.css';
@@ -602,17 +719,42 @@ const Visualization = ({ projectData, onClassSelect }) => {
 
   const options = {
     layout: {
+      improvedLayout: true,
       hierarchical: false
     },
     edges: {
-      color: "#000000"
+      color: "#000000",
+      smooth: {
+        type: 'cubicBezier',
+        forceDirection: 'horizontal',
+        roundness: 0.4
+      }
     },
-    height: `${dimensions.height}px`
+    physics: {
+      stabilization: false,
+      barnesHut: {
+        gravitationalConstant: -80000,
+        springConstant: 0.001,
+        springLength: 200
+      }
+    },
+    nodes: {
+      shape: 'dot',
+      size: 16,
+      font: {
+        size: 12,
+        color: '#ffffff'
+      },
+      borderWidth: 2,
+      shadow: true
+    },
+    height: `${dimensions.height}px`,
+    width: `${dimensions.width}px`
   };
 
   const events = {
     select: function(event) {
-      const { nodes, edges } = event;
+      const { nodes } = event;
       if (nodes.length > 0) {
         const selectedNode = graphData.nodes.find(node => node.id === nodes[0]);
         if (selectedNode && selectedNode.group === 'class') {
@@ -624,7 +766,6 @@ const Visualization = ({ projectData, onClassSelect }) => {
 
   const handleGraphError = (error) => {
     console.error("Graph rendering error:", error);
-    // Attempt to re-render the graph
     setGraphKey(prevKey => prevKey + 1);
   };
 
@@ -641,12 +782,11 @@ const Visualization = ({ projectData, onClassSelect }) => {
             options={options}
             events={events}
             getNetwork={network => {
-              // You can use this to access the vis.js network api
               network.on("stabilizationIterationsDone", function () {
-                network.setOptions( { physics: false } );
+                network.setOptions({ physics: false });
               });
             }}
-            style={{ height: `${dimensions.height}px` }}
+            style={{ height: `${dimensions.height}px`, width: `${dimensions.width}px` }}
             onError={handleGraphError}
           />
         </>
