@@ -549,7 +549,6 @@
 
 import React, { useCallback, useRef, useEffect, useState, useMemo } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import { useDebounce } from 'use-debounce';
 import './Visualization.css';
 
 const Visualization = ({ projectData, onClassSelect }) => {
@@ -558,8 +557,6 @@ const Visualization = ({ projectData, onClassSelect }) => {
   const [highlightNodes, setHighlightNodes] = useState(new Set());
   const [highlightLinks, setHighlightLinks] = useState(new Set());
   const [hoverNode, setHoverNode] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -579,6 +576,10 @@ const Visualization = ({ projectData, onClassSelect }) => {
   }, []);
 
   const graphData = useMemo(() => {
+    if (!projectData || !projectData.modules || projectData.modules.length === 0) {
+      return { nodes: [], links: [] };
+    }
+
     // ... (keep existing graphData logic)
   }, [projectData]);
 
@@ -613,26 +614,8 @@ const Visualization = ({ projectData, onClassSelect }) => {
     node.group === 'package' ? 6 : 4, 
   []);
 
-  useEffect(() => {
-    if (debouncedSearchTerm) {
-      const searchRegex = new RegExp(debouncedSearchTerm, 'i');
-      const matchedNodes = graphData.nodes.filter(node => searchRegex.test(node.id));
-      setHighlightNodes(new Set(matchedNodes));
-    } else {
-      setHighlightNodes(new Set());
-    }
-  }, [debouncedSearchTerm, graphData]);
-
   return (
     <div className="visualization">
-      <div className="search-container">
-        <input
-          type="text"
-          placeholder="Search nodes..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
       <ForceGraph2D
         ref={forceGraphRef}
         graphData={graphData}
