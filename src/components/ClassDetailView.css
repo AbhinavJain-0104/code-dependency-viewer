@@ -1,129 +1,30 @@
-/* 
-
-
-.class-detail-view {
+/* .class-details {
   display: flex;
   flex-direction: column;
-  height: 100vh;
   color: #ffffff;
   background-color: #1e1e2f;
-}
-
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding: 1rem;
-  background-color: #27293d;
-}
-
-.back-button, .fullscreen-button {
-  background: none;
-  border: none;
-  color: #61dafb;
-  cursor: pointer;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-main {
-  display: flex;
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem;
-}
-
-.left-panel, .right-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.left-panel {
-  margin-right: 1rem;
-}
-
-.graph-container, .metrics, .general-info, .ai-description {
-  background-color: #27293d;
   border-radius: 8px;
-  padding: 1rem;
+}
+
+.general-info, .fields-section, .methods-section, .ai-description {
   margin-bottom: 1rem;
 }
 
-.graph-container {
-  height: 60vh;
-  transition: height 0.3s ease;
-}
-
-.metrics {
-  display: flex;
-  justify-content: space-around;
-}
-
-.metric {
-  text-align: center;
-}
-
-.metric-value {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #61dafb;
-  display: block;
-}
-
-.metric-label {
-  font-size: 0.8rem;
-}
-
-.fields-section, .methods-section {
-  margin-top: 1rem;
-}
-
-.fields-section h4, .methods-section h4 {
+h2 {
   margin-bottom: 0.5rem;
 }
 
-.fields-section ul, .methods-section ul {
+ul {
   list-style-type: none;
   padding-left: 1rem;
 }
 
-.fields-section li, .methods-section li {
+li {
   margin-bottom: 0.25rem;
-}
-
-.fullscreen .graph-container {
-  height: 90vh;
-}
-
-.fullscreen .left-panel {
-  flex: 1;
-}
-
-.fullscreen .right-panel {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  main {
-    flex-direction: column;
-  }
-
-  .left-panel {
-    margin-right: 0;
-    margin-bottom: 1rem;
-  }
-
-  .graph-container {
-    height: 40vh;
-  }
-
-  .fullscreen .graph-container {
-    height: 80vh;
-  }
 } */
+
+
 
 
 .class-detail-view {
@@ -164,6 +65,7 @@ main {
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .left-panel {
