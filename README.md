@@ -1,6 +1,7 @@
 # Code Analyser
 
 This project is a web application that visualizes code dependencies for Java projects. It allows users to input a GitHub repository URL, analyzes the project structure, and displays the dependencies between classes and packages.
+Example: Try adding https://github.com/sauce-code/cuckoo to the website.
 
 ## Features
 
